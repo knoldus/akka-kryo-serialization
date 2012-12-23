@@ -197,14 +197,17 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 	def create(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll: Map[Any, Any] = 
+		var coll: Map[Any, Any] = null
+		
 			if(classOf[SortedMap[_,_]].isAssignableFrom(typ)) {
 				// Read ordering and set it for this collection 
-				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
-				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-				catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
+				try {
+				    val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
+				    coll = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
+				}
+				catch { case _ => coll = kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 			} else {
-				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+				coll = kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
 		
 		if (len != 0) {
@@ -225,7 +228,8 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 	override def read(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll: Map[Any, Any] = 
+		var coll: Map[Any, Any] = null
+		
 			if(classOf[SortedMap[_,_]].isAssignableFrom(typ)) {
 				// Read ordering and set it for this collection 
 				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
@@ -235,12 +239,12 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 				       class2constuctor += typ->constr
 				       constr
 				   } 
-				   constructor.newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
+				   coll = constructor.newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
+				} catch { case _ => coll = kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 //				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
 //				catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 			} else {
-				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+				coll = kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
 		
 		// FIXME: Currently there is no easy way to get the reference ID of the object being read
@@ -346,11 +350,12 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 	def create(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll: Set[Any] = 
+		var coll: Set[Any] = null
+			
 			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
 				// Read ordering and set it for this collection 
-				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				try {
+				val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				val constructor = 
 					class2constuctor.get(typ) getOrElse 
 					{  
@@ -358,10 +363,10 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 					   class2constuctor += typ->constr
 					   constr
 					} 
-				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
+				coll = constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
+				} catch { case _ => coll = kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
-				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
+				coll = kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
 
 		if (len != 0) {
@@ -382,7 +387,8 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 	override def read(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll: Set[Any] = 
+		var coll: Set[Any] = null
+		
 			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
 				// Read ordering and set it for this collection 
 				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
@@ -394,10 +400,10 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 					   class2constuctor += typ->constr
 					   constr
 					} 
-				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
+				coll = constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
+				} catch { case _ => coll = kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
-				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
+				coll = kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
 
 		// FIXME: Currently there is no easy way to get the reference ID of the object being read
