@@ -22,6 +22,7 @@ import akka.actor.ActorRef
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 import scala.collection.JavaConversions._
+import scala.util._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
@@ -136,8 +137,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			// Support serialization of some standard or often used Scala classes 
 			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 			system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => {  
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => {  
 							log.error("Class could not be loaded and/or registered: {} ", "scala.Enumeration$Val") 
 							throw e 
 						}
@@ -163,8 +164,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 					val id = idNum.toInt
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-					case Right(clazz) => kryo.register(clazz, id)
-					case Left(e) => {  
+					case Success(clazz) => kryo.register(clazz, id)
+					case Failure(e) => {  
 							log.error("Class could not be loaded and/or registered: {} ", fqcn) 
 							throw e 
 						}
@@ -174,8 +175,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				for(classname <- classnames) {
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](classname) match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => { 
 							log.warning("Class could not be loaded and/or registered: {} ", classname) 
 							/* throw e */ 
 						}
@@ -190,8 +191,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 					val id = idNum.toInt
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-					case Right(clazz) => kryo.register(clazz, id)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz, id)
+					case Failure(e) => { 
 							log.error("Class could not be loaded and/or registered: {} ", fqcn) 
 							throw e
 						}
@@ -201,8 +202,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				for(classname <- classnames) {
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](classname) match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => { 
 							log.warning("Class could not be loaded and/or registered: {} ", classname) 
 							/* throw e */ 
 						}

@@ -131,12 +131,12 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		if (len != 0) { 
 			if (serializer != null) {
 				if (elementsCanBeNull) {
-					collection.foreach {element => kryo.writeObjectOrNull(output, element, serializer) }
+					collection.foreach {element: Any => kryo.writeObjectOrNull(output, element, serializer) }
 				} else {
-					collection.foreach {element => kryo.writeObject(output, element, serializer) }
+					collection.foreach {element: Any => kryo.writeObject(output, element, serializer) }
 				}
 			} else {
-				collection.foreach {element => kryo.writeClassAndObject(output, element) }
+				collection.foreach {element: Any => kryo.writeClassAndObject(output, element) }
 			}
 		}
 	}
@@ -266,7 +266,7 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 	}
 
 	override def write (kryo : Kryo, output: Output, obj: Map[_, _]) = {
-		val collection: Map[_, _] = obj
+		val collection: Map[_ <: Any, Any] = obj
 		val len = if (length != 0) length else {
 			val size = collection.size
 			output.writeInt(size, true)
@@ -282,24 +282,24 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			if (keySerializer != null) {
 				if (elementsCanBeNull) {
 					collection.foreach { 
-						case (k,v) => { 
-							kryo.writeObjectOrNull(output, k, keySerializer)
-							kryo.writeObjectOrNull(output, v, valueSerializer) 
+						kv: Tuple2[Any,Any] => { 
+							kryo.writeObjectOrNull(output, kv._1, keySerializer)
+							kryo.writeObjectOrNull(output, kv._2, valueSerializer) 
 						}
 					}
 				} else {
 					collection.foreach { 
-						case (k,v) => { 
-							kryo.writeObject(output, k, keySerializer)
-							kryo.writeObject(output, v, valueSerializer) 
+						kv: Tuple2[Any,Any] => { 
+							kryo.writeObject(output, kv._1, keySerializer)
+							kryo.writeObject(output, kv._2, valueSerializer) 
 						}
 					}
 				}
 			} else {
 				collection.foreach { 
-					case (k,v) => { 
-						kryo.writeClassAndObject(output, k)
-						kryo.writeClassAndObject(output, v) 
+					kv: Tuple2[Any,Any] => { 
+						kryo.writeClassAndObject(output, kv._1)
+						kryo.writeClassAndObject(output, kv._2) 
 					}
 				}
 			}
@@ -438,12 +438,12 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 		if (len != 0) { 
 			if (serializer != null) {
 				if (elementsCanBeNull) {
-					collection foreach { e => kryo.writeObjectOrNull(output, e, serializer) }
+					collection foreach { e: Any => kryo.writeObjectOrNull(output, e, serializer) }
 				} else {
-					collection foreach { e => kryo.writeObject(output, e, serializer) }
+					collection foreach { e: Any => kryo.writeObject(output, e, serializer) }
 				}
 			} else {
-				collection foreach { e => kryo.writeClassAndObject(output, e) }
+				collection foreach { e: Any => kryo.writeClassAndObject(output, e) }
 			}
 		}
 	}
