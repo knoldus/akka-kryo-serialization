@@ -34,20 +34,31 @@ import scala.Enumeration
  *
  */
 
-//class OptionSerializer extends Serializer[Option] {
-//	locally
-//	{
-//		setImmutable(true)
-//	}
-//
-//	override def write (kryo: Kryo, output: Output, obj: Option[_]) = {
-//		output.writeBoolean(obj)
-//	}
-//
-//	override def read (kryo: Kryo, input: Input, typ: Class[Option[_]]): Option[_] = {
-//		return input.readBoolean()
-//	}
-//}
+class ScalaOptionSerializer extends Serializer[Option[_]] {
+	locally
+	{
+		setImmutable(true)
+	}
+
+	override def write (kryo: Kryo, output: Output, obj: Option[_]) = {
+		obj match {
+			case Some(x) =>
+				output.writeBoolean(true)
+				kryo.writeClassAndObject(output, x)
+			case None =>
+				output.writeBoolean(false)
+		}
+		
+	}
+
+	override def read (kryo: Kryo, input: Input, typ: Class[Option[_]]): Option[_] = {
+		if (input.readBoolean()) {
+			Some(kryo.readClassAndObject(input))
+		} else {
+			None
+		}
+	}
+}
 
 //class TupleSerializer extends Serializer[Product] {
 //	override def write (kryo: Kryo, output: Output, obj: Product) = {
