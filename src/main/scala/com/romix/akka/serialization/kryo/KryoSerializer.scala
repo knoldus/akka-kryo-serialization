@@ -29,9 +29,14 @@ import com.esotericsoftware.kryo.io.Output
 import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
 import com.romix.scala.serialization.kryo._
-
 import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}
+
+
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.TimeUnit
+import com.romix.scala.serialization.kryo.LiftBoxSerializer
 
 class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
@@ -137,6 +142,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			// Support serialization of some standard or often used Scala classes
 			kryo.addDefaultSerializer(classOf[scala.Option[_]], classOf[ScalaOptionSerializer])
 			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
+			// Support serialization of Box
+			kryo.addDefaultSerializer(classOf[net.liftweb.common.Box[_]], classOf[LiftBoxSerializer])
 			system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
 					case Success(clazz) => kryo.register(clazz)
 					case Failure(e) => {  
@@ -268,11 +275,6 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	private def releaseBuffer(buffer: Output) = { buffer.clear() } 
 		
 }
-
-
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.TimeUnit
 
 // Support pooling of objects. Useful if you want to reduce 
 // the GC overhead and memory pressure.

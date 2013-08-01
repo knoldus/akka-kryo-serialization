@@ -38,6 +38,7 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.1.0",
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.1.0",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.20",
+    libraryDependencies += "net.liftweb" %% "lift-webkit" % "2.5",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
     )
     .settings(defaultOsgiSettings: _*)

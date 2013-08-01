@@ -19,7 +19,6 @@
 package com.romix.scala.serialization.kryo
 
 import java.lang.reflect.Constructor
-
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
